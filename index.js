@@ -21,6 +21,20 @@ app.get('/', (req, res, next) => {
     });
 })
 
+app.get('/todo/:id', (req, res, next) => {
+    const id = req.params.id;
+    Todo.findById(id)
+        .then(todo => {
+            if (todo) {
+                res.status(200).json(todo)
+                next()
+            } else {
+                res.status(400).json({message: 'there was an error getting this item'})
+                next()
+            }
+        })
+})
+
 app.post('/todo', (req, res, next) => {
     const { title, body } = req.body;
     console.log({title, body});
