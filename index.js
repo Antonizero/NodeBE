@@ -49,6 +49,29 @@ app.post('/todo', (req, res, next) => {
     }
 })
 
+app.put('/todo/:id', (req, res, next) => {
+    const updatedTitle = req.body.title;
+    const updatedBody = req.body.body;
+    const id = req.params.id;
+    Todo.findById(id)
+        .then(todo => {
+            if (!todo) {
+                res.status(400).json({message: 'could not find the todo to modify'});
+                next();
+            } else {
+                todo.title = updatedTitle;
+                todo.body = updatedBody;
+                todo.save()
+                    .then(() => {
+                        res.status(200).json({message: 'succesfully updated todo'});
+                        next();
+                    })
+                    
+            }
+        })
+        .catch(e => console.log(e));
+})
+
 mongoose.connect(process.env.DATABASE, { useNewUrlParser: true, useUnifiedTopology: true})
     .then(() => {
         console.log('database connected')
