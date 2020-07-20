@@ -23,37 +23,39 @@ app.get('/todos', (req, res, next) => {
     });
 })
 
-app.get('/todo/:id', (req, res, next) => {
-    const id = req.params.id;
-    Todo.findById(id)
-        .then(todo => {
-            if (todo) {
-                res.status(200).json(todo)
-                next()
-            } else {
-                res.status(400).json({message: 'there was an error getting this item'})
-                next()
-            }
-        })
-})
+// app.get('/todo/:id', (req, res, next) => {
+//     const id = req.params.id;
+//     Todo.findById(id)
+//         .then(todo => {
+//             if (todo) {
+//                 res.status(200).json(todo)
+//                 next()
+//             } else {
+//                 res.status(400).json({message: 'there was an error getting this item'})
+//                 next()
+//             }
+//         })
+// })
 
 app.post('/todo', (req, res, next) => {
-    const { title, body } = req.body;
-    console.log({title, body});
-    if (title && body) {
-        const todo = new Todo({title, body})
+    const data = req.body.data;
+    if (typeof data === 'string') {
+        const todo = new Todo({ body: data });
         todo.save()
-        res.status(200).json({message: 'you succesfully connect to the server and wrote to database'});
-        next();
+            .then(() => {
+                res.status(200).json({message: 'todo successfully created'});
+                next();
+            })
+            .catch(e => console.log(e));
+        
     } else {
-        res.status(400).json({message: 'something went wrong when posting todo'});
-        next()
+        res.status(400).json({message: 'something went wrong'});
+        next();
     }
 })
 
 app.put('/todo/:id', (req, res, next) => {
-    const updatedTitle = req.body.title;
-    const updatedBody = req.body.body;
+    const updatedData = req.body.data;
     const id = req.params.id;
     Todo.findById(id)
         .then(todo => {
@@ -61,8 +63,7 @@ app.put('/todo/:id', (req, res, next) => {
                 res.status(400).json({message: 'could not find the todo to modify'});
                 next();
             } else {
-                todo.title = updatedTitle;
-                todo.body = updatedBody;
+                todo.body = updatedData;
                 todo.save()
                     .then(() => {
                         res.status(200).json({message: 'succesfully updated todo'});
@@ -74,29 +75,26 @@ app.put('/todo/:id', (req, res, next) => {
         .catch(e => console.log(e));
 })
 
-app.delete('/todo/:id', (req, res, next) => {
-    const id = req.params.id;
-    Todo.findById(id)
-        .then(todo => {
-            if (!todo) {
-                res.status(400).json({message: 'todo not existing'});
-                next();
-            } else {
-                Todo.deleteOne({_id: id})
-                    .then(() => {
-                        res.status(200).json({message: 'todo succesfully deleted'});
-                        next();
-                    })
-                    .catch(e => console.log(e))
-            }
+// app.delete('/todo/:id', (req, res, next) => {
+//     const id = req.params.id;
+//     Todo.findById(id)
+//         .then(todo => {
+//             if (!todo) {
+//                 res.status(400).json({message: 'todo not existing'});
+//                 next();
+//             } else {
+//                 Todo.deleteOne({_id: id})
+//                     .then(() => {
+//                         res.status(200).json({message: 'todo succesfully deleted'});
+//                         next();
+//                     })
+//                     .catch(e => console.log(e))
+//             }
             
-        })
-})
+//         })
+// })
 
 mongoose.connect(process.env.DATABASE, { useNewUrlParser: true, useUnifiedTopology: true})
-    .then(() => {
-        console.log('database connected')
-        app.listen(process.env.PORT)
-    })
+    .then(() => app.listen(process.env.PORT))
     .catch(error => console.log(error));
 
