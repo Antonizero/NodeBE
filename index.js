@@ -40,7 +40,7 @@ app.get('/todos', (req, res, next) => {
 app.post('/todo', (req, res, next) => {
     const data = req.body.data;
     if (typeof data === 'string') {
-        const todo = new Todo({ body: data });
+        const todo = new Todo({ body: data, done: false });
         todo.save()
             .then(() => {
                 res.status(200).json({message: 'todo successfully created'});
@@ -72,7 +72,30 @@ app.put('/todo/:id', (req, res, next) => {
                     
             }
         })
-        .catch(e => console.log(e));
+        .catch(error => {
+            throw new Error(error)
+        });
+})
+
+app.put('/toggletodo/:id', (req, res, next) => {
+    const status = req.query.done;
+    const id = req.params.id;
+    Todo.findById({_id: id})
+        .then(todo => {
+            if (!todo) {
+                res.status(400).json({message: 'could not find the todo\'s id'})
+            } else {
+                todo.done = status;
+                todo.save()
+                    .then(() => {
+                        res.status(200).json({message: `succesfully updated todo's status to ${status}`});
+                        next();
+                    })
+            }
+        })
+        .catch(error => {
+            throw new Error(error)
+        });
 })
 
 app.delete('/todo/:id', (req, res, next) => {
